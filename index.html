@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scripture Reading (KJV Bible)</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #f4f7ec;
+      margin: 0;
+      padding: 30px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #f4f7ec;
+      border: 2px solid #6e8645;
+      border-radius: 8px;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      background-color: #6e8645;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 1.5rem;
+    }
+
+    .top-section {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+      gap: 30px;
+    }
+
+    .logo {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+    }
+
+    .selectors {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background-color: #e7f0d0;
+      border: 2px solid #333;
+    }
+
+    .selectors div {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #333;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+      background-color: #fff;
+      border: none;
+      font-family: inherit;
+    }
+
+    .output-section {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      text-align: center;
+    }
+
+    .output-label {
+      background-color: #dbe8b7;
+      padding: 12px;
+      border: 1px solid #333;
+      font-weight: bold;
+    }
+
+    .output-value {
+      background-color: white;
+      padding: 12px;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SCRIPTURE READING (KJV Bible)</h1>
+    
+    <div class="top-section">
+      <img src="bbc-logo.png" alt="Church Logo" class="logo">
+      
+      <div class="selectors">
+        <div>Select Sunday</div>
+        <div>Select Service (AM/PM)</div>
+        <div>
+          <select id="sundaySelect"></select>
+        </div>
+        <div>
+          <select id="serviceSelect">
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-section">
+      <div class="output-label">Book:</div>
+      <div class="output-value" id="bookDisplay">—</div>
+      <div class="output-label">Chapter:</div>
+      <div class="output-value" id="chapterDisplay">—</div>
+    </div>
+  </div>
+
+  <script>
+    const bookChapters = [
+      { book: "Genesis", chapters: 50 },
+      { book: "Exodus", chapters: 40 },
+      { book: "Leviticus", chapters: 27 },
+      { book: "Numbers", chapters: 36 },
+      { book: "Deuteronomy", chapters: 34 },
+      { book: "Joshua", chapters: 24 },
+      { book: "Judges", chapters: 21 },
+      { book: "Ruth", chapters: 4 },
+      { book: "1 Samuel", chapters: 31 },
+      { book: "2 Samuel", chapters: 24 },
+      { book: "1 Kings", chapters: 22 },
+      { book: "2 Kings", chapters: 25 },
+      { book: "1 Chronicles", chapters: 29 },
+      { book: "2 Chronicles", chapters: 36 },
+      { book: "Ezra", chapters: 10 },
+      { book: "Nehemiah", chapters: 13 },
+      { book: "Esther", chapters: 10 },
+      { book: "Job", chapters: 42 },
+      { book: "Psalms", chapters: 150 },
+      { book: "Proverbs", chapters: 31 },
+      { book: "Ecclesiastes", chapters: 12 },
+      { book: "Song of Solomon", chapters: 8 },
+      { book: "Isaiah", chapters: 66 },
+      { book: "Jeremiah", chapters: 52 },
+      { book: "Lamentations", chapters: 5 },
+      { book: "Ezekiel", chapters: 48 },
+      { book: "Daniel", chapters: 12 },
+      { book: "Hosea", chapters: 14 },
+      { book: "Joel", chapters: 3 },
+      { book: "Amos", chapters: 9 },
+      { book: "Obadiah", chapters: 1 },
+      { book: "Jonah", chapters: 4 },
+      { book: "Micah", chapters: 7 },
+      { book: "Nahum", chapters: 3 },
+      { book: "Habakkuk", chapters: 3 },
+      { book: "Zephaniah", chapters: 3 },
+      { book: "Haggai", chapters: 2 },
+      { book: "Zechariah", chapters: 14 },
+      { book: "Malachi", chapters: 4 }
+    ];
+
+    const startDate = new Date("2025-03-30");
+    const startBook = "Judges";
+    const startChapter = 13;
+
+    // Generate Sundays indefinitely from 2025
+    const sundaySelect = document.getElementById("sundaySelect");
+    const serviceSelect = document.getElementById("serviceSelect");
+    const bookDisplay = document.getElementById("bookDisplay");
+    const chapterDisplay = document.getElementById("chapterDisplay");
+
+    const today = new Date();
+    const maxYears = 50;
+    let date = new Date(startDate);
+    const sundays = [];
+
+    while (date.getFullYear() <= startDate.getFullYear() + maxYears) {
+      sundays.push(new Date(date));
+      date.setDate(date.getDate() + 7); // next Sunday
+    }
+
+    sundays.forEach((sunday) => {
+      const option = document.createElement("option");
+      option.value = sunday.toISOString().split("T")[0];
+      option.text = sunday.toDateString();
+      sundaySelect.appendChild(option);
+    });
+
+    function getReadingIndex(selectedDate, service) {
+      const date = new Date(selectedDate);
+      const diffInDays = Math.floor((date - startDate) / (1000 * 60 * 60 * 24));
+      const weeks = Math.floor(diffInDays / 7);
+      return weeks * 2 + (service === "PM" ? 1 : 0);
+    }
+
+    function getBookAndChapter(index) {
+      let bookIndex = bookChapters.findIndex(b => b.book === startBook);
+      let chapter = startChapter;
+      while (index > 0) {
+        const currentBook = bookChapters[bookIndex];
+        if (chapter < currentBook.chapters) {
+          chapter++;
+        } else {
+          bookIndex++;
+          chapter = 1;
+        }
+        index--;
+      }
+      return {
+        book: bookChapters[bookIndex].book,
+        chapter: chapter
+      };
+    }
+
+    function updateReading() {
+      const selectedDate = sundaySelect.value;
+      const service = serviceSelect.value;
+      const index = getReadingIndex(selectedDate, service);
+      const reading = getBookAndChapter(index);
+      bookDisplay.textContent = reading.book;
+      chapterDisplay.textContent = reading.chapter;
+    }
+
+    sundaySelect.addEventListener("change", updateReading);
+    serviceSelect.addEventListener("change", updateReading);
+
+    // Default selection
+    sundaySelect.selectedIndex = 0;
+    updateReading();
+  </script>
+</body>
+</html>
